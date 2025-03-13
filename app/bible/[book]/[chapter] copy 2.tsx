@@ -1,37 +1,34 @@
-import { useEffect, useState } from "react";
-import { StyleSheet, View, ScrollView } from "react-native";
+"use client"
+
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { Appbar, Menu, Divider, Button, IconButton, Text } from "react-native-paper";
-import bibleBooks from "../data/bibleData"; // Import the static book list
+import { StyleSheet, View, ScrollView } from "react-native";
+import { Text, Appbar, Divider, Button, IconButton, Menu } from "react-native-paper";
+import { useState } from "react";
+import bibleData from "../data/ot/obadiah.json"; // Assume this file contains the JSON data
+
+const getBibleContent = (book, chapter) => {
+  if (!bibleData || !bibleData.content || !bibleData.content.sections) return [];
+
+  const sections = bibleData.content.sections.filter(section =>
+    section.chapters.some(ch => ch.chapter === chapter)
+  );
+
+  return sections.map(section => ({
+    title: section.title,
+    verses: section.chapters.find(ch => ch.chapter === chapter)?.verses || []
+  }));
+};
 
 export default function BiblePage() {
   const { book, chapter } = useLocalSearchParams();
   const router = useRouter();
   const [fontSize, setFontSize] = useState(16);
   const [menuVisible, setMenuVisible] = useState(false);
-  const [sections, setSections] = useState([]);
-  
-  const bookName = typeof book === "string" ? book.toLowerCase() : "genesis";
+
+  const bookName = typeof book === "string" ? book : "Genesis";
   const chapterNum = typeof chapter === "string" ? Number.parseInt(chapter, 10) : 1;
 
-  useEffect(() => {
-    const bibleData = bibleBooks[bookName]; // Get the correct book JSON
-
-    if (bibleData?.content?.sections) {
-      const filteredSections = bibleData.content.sections.filter((section) =>
-        section.chapters.some((ch) => ch.chapter === chapterNum)
-      );
-
-      setSections(
-        filteredSections.map((section) => ({
-          title: section.title,
-          verses: section.chapters.find((ch) => ch.chapter === chapterNum)?.verses || [],
-        }))
-      );
-    } else {
-      setSections([]);
-    }
-  }, [bookName, chapterNum]);
+  const sections = getBibleContent(bookName, chapterNum);
 
   const navigateToChapter = (offset) => {
     const newChapter = chapterNum + offset;
@@ -44,7 +41,7 @@ export default function BiblePage() {
     <View style={styles.container}>
       <Appbar.Header>
         <Appbar.BackAction onPress={() => router.back()} />
-        <Appbar.Content title={`${bookName.charAt(0).toUpperCase() + bookName.slice(1)} ${chapterNum}`} />
+        <Appbar.Content title={`${bookName} ${chapterNum}`} />
         <Menu
           visible={menuVisible}
           onDismiss={() => setMenuVisible(false)}
@@ -68,22 +65,18 @@ export default function BiblePage() {
 
       <ScrollView style={styles.scrollView}>
         <View style={styles.chapterContainer}>
-          {sections.length > 0 ? (
-            sections.map((section, index) => (
-              <View key={index}>
-                <Text variant="headlineMedium" style={styles.sectionTitle}>{section.title}</Text>
-                <Divider style={styles.divider} />
-                {section.verses.map((verse) => (
-                  <View key={verse.verse} style={styles.verseContainer}>
-                    <Text style={[styles.verseNumber, { fontSize }]}>{verse.verse}</Text>
-                    <Text style={[styles.verseText, { fontSize }]}>{verse.text}</Text>
-                  </View>
-                ))}
-              </View>
-            ))
-          ) : (
-            <Text>No content available.</Text>
-          )}
+          {sections.map((section, index) => (
+            <View key={index}>
+              <Text variant="headlineMedium" style={styles.sectionTitle}>{section.title}</Text>
+              <Divider style={styles.divider} />
+              {section.verses.map((verse) => (
+                <View key={verse.verse} style={styles.verseContainer}>
+                  <Text style={[styles.verseNumber, { fontSize }]}>{verse.verse}</Text>
+                  <Text style={[styles.verseText, { fontSize }]}>{verse.text}</Text>
+                </View>
+              ))}
+            </View>
+          ))}
         </View>
       </ScrollView>
 

@@ -4,7 +4,7 @@ import { useLocalSearchParams, useRouter } from "expo-router"
 import { StyleSheet, View, ScrollView } from "react-native"
 import { Text, Appbar, Divider, Button, IconButton, Menu } from "react-native-paper"
 import { useState } from "react"
-import bibleData from '../data/obadiah.json'; // Assume this file contains the JSON data
+import bibleData from '../data/ot/obadiah.json'; // Assume this file contains the JSON data
 // Mock Bible data - in a real app, you would fetch this from an API
 // const getBibleContent = (book: string, chapter: number) => {
 //   // This is just mock data
